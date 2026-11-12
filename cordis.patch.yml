@@ -1,0 +1,24 @@
+# dsh-ghostscreen-mcp - bundle patch layer
+#
+# Mounts one loader row: this package's host half (index.mjs). It resolves the
+# GhostScreen.Mcp.exe path (config exePath -> %GHOSTSCREEN_MCP_EXE% ->
+# %LOCALAPPDATA%\GhostScreen\...), then mounts the official
+# @deepseek-ai/dsh-mcp-client bridge over stdio. Every tool the server exposes
+# shows up as `mcp__ghostscreen__<ToolName>`.
+#
+# BOOT SAFETY - if the exe is missing, the host half logs download guidance and
+# mounts nothing. The DSH session boots and runs normally without the
+# ghostscreen tools.
+#
+# Tuning - override this row from your profile's own patch layer
+# (~/.dsh/profiles/<profile>/cordis.patch.yml):
+#
+#   - id: ghostscreen-mcp-runtime
+#     name: dsh-ghostscreen-mcp
+#     config:
+#       exePath: 'C:\path\to\GhostScreen.Mcp.exe'
+#       toolCallTimeoutMs: 120000
+#
+- insert:
+    - id: ghostscreen-mcp-runtime
+      name: dsh-ghostscreen-mcp

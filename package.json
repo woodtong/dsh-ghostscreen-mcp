@@ -1,0 +1,48 @@
+{
+  "name": "dsh-ghostscreen-mcp",
+  "version": "0.1.0",
+  "description": "Mount the GhostScreen (Neutrino) MCP server in DSH sessions: invisible-window capture and input for native apps and headless web",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "screenshots.json",
+    "screenshots"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-mcp-client": ">=0.1.0-rc.6 <1.0.0-0"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "ghostscreen",
+    "neutrino",
+    "mcp"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/woodtong/dsh-ghostscreen-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/woodtong/dsh-ghostscreen-mcp/issues"
+  },
+  "homepage": "https://github.com/woodtong/dsh-ghostscreen-mcp#readme"
+}
