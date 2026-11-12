@@ -1,0 +1,7 @@
+url: https://github.com/woodtong/dsh-ghostscreen-mcp
+name: woodtong/dsh-ghostscreen-mcp
+category: tools
+tarball: https://github.com/woodtong/dsh-ghostscreen-mcp/releases/latest/download/dsh-ghostscreen-mcp.tgz
+description:
+  en: 'Mounts the GhostScreen MCP server into DSH sessions through the official MCP client bridge, registering its 21 mcp__ghostscreen__* tools: off-screen window capture (PrintWindow), window-message/UIA input that never steals focus, and headless-Edge web automation over CDP, with UIA actions gated on human consent. Ships no binary - requires GhostScreen.Mcp.exe from the Neutrino releases, located via config, GHOSTSCREEN_MCP_EXE, or %LOCALAPPDATA%\GhostScreen.'
+  zh: '通过官方 MCP 客户端桥接层把 GhostScreen 服务器接入 DSH，注册 21 个 mcp__ghostscreen__* 工具：屏幕外窗口捕获（PrintWindow）、不抢焦点的窗口消息/UIA 输入、基于 CDP 的无头 Edge 网页自动化，UIA 动作经人工同意门。插件不带二进制——需从 Neutrino Release 获取 GhostScreen.Mcp.exe，经 config、GHOSTSCREEN_MCP_EXE 或 %LOCALAPPDATA%\GhostScreen 定位。'
