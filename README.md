@@ -37,18 +37,21 @@ dsh plugin --profile <profile> add woodtong/dsh-ghostscreen-mcp
 
 ### Getting GhostScreen.Mcp.exe
 
-1. Download the `GhostScreen-<version>-win-x64.zip` from the
-   [Neutrino Releases](https://github.com/woodtong/neutrino/releases) page.
-2. Extract it, then either:
-   - run `scripts/install.ps1` from the extracted package — it installs to
-     `%LOCALAPPDATA%\GhostScreen\app\` and this plugin finds
-     `mcp\GhostScreen.Mcp.exe` there automatically; **or**
-   - copy `mcp\GhostScreen.Mcp.exe` anywhere you like and point the plugin at
-     it (next section).
+**Nothing to do by default**: on first start with the exe missing, the plugin
+automatically downloads the latest `GhostScreen-<version>-win-x64.zip`
+(~200 MiB, progress logged) from the
+[Neutrino Releases](https://github.com/woodtong/neutrino/releases), unpacks it
+to `%LOCALAPPDATA%\GhostScreen\app\`, and mounts it. To manage the binary
+yourself, either:
 
-If the exe is missing at startup, the plugin logs exactly this guidance, mounts
+1. download the zip and run `scripts/install.ps1` from the extracted package;
+   **or**
+2. copy `mcp\GhostScreen.Mcp.exe` anywhere you like and point the plugin at
+   it (next section).
+
+If the auto-download fails (offline / restricted network) or is disabled via
+`config.autoDownload: false`, the plugin logs setup guidance, mounts
 nothing, and the rest of the DSH session keeps working normally.
-
 ### Pointing at a custom exe location
 
 The plugin resolves the exe in this order:
@@ -64,11 +67,14 @@ The plugin resolves the exe in this order:
    ```
 
 2. The `GHOSTSCREEN_MCP_EXE` environment variable (full path to the exe).
-3. Default install locations:
-   `%LOCALAPPDATA%\GhostScreen\app\mcp\GhostScreen.Mcp.exe`, then
+3. Default install locations: the auto-download / install.ps1 layout under
+   `%LOCALAPPDATA%\GhostScreen\app\` (either
+   `app\GhostScreen-<ver>\mcp\GhostScreen.Mcp.exe` or
+   `app\mcp\GhostScreen.Mcp.exe`), then
    `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`.
 
-Other supported `config` keys: `toolCallTimeoutMs` (default left to the
+Other supported `config` keys: `autoDownload` (default true — fetch the latest
+release when the exe is missing), `toolCallTimeoutMs` (default left to the
 bridge), `args`, `env` (extra environment variables for the server process).
 
 ## Verification

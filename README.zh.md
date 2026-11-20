@@ -33,16 +33,18 @@ dsh plugin --profile <profile> add woodtong/dsh-ghostscreen-mcp
 
 ### 获取 GhostScreen.Mcp.exe
 
-1. 在 [Neutrino Releases](https://github.com/woodtong/neutrino/releases) 下载
-   `GhostScreen-<version>-win-x64.zip`。
-2. 解压后二选一：
-   - 运行解压包里的 `scripts/install.ps1` —— 它会安装到
-     `%LOCALAPPDATA%\GhostScreen\app\`，本插件自动找到其中的
-     `mcp\GhostScreen.Mcp.exe`；**或**
-   - 把 `mcp\GhostScreen.Mcp.exe` 放到任意位置，按下节指给插件。
+**默认什么都不用做**：首次启动发现 exe 缺失时，插件会自动从
+[Neutrino Releases](https://github.com/woodtong/neutrino/releases) 下载最新的
+`GhostScreen-<version>-win-x64.zip`（约 200 MiB，日志有进度），解压到
+`%LOCALAPPDATA%\GhostScreen\app\` 并挂载。想手动管理的话二选一：
 
-exe 缺失时，插件在日志里打印上面这份指引，不挂载任何工具，DSH 会话其余部分
-照常工作。
+1. 下载 zip 后运行解压包里的 `scripts/install.ps1` —— 它会安装到
+   `%LOCALAPPDATA%\GhostScreen\app\`，插件自动找到其中的
+   `mcp\GhostScreen.Mcp.exe`；**或**
+2. 把 `mcp\GhostScreen.Mcp.exe` 放到任意位置，按下节指给插件。
+
+自动下载失败（离线、网络受限）或被 `config.autoDownload: false` 关闭时，插件在
+日志里打印指引，不挂载任何工具，DSH 会话其余部分照常工作。
 
 ### 指定 exe 位置
 
@@ -58,11 +60,12 @@ exe 缺失时，插件在日志里打印上面这份指引，不挂载任何工�
    ```
 
 2. 环境变量 `GHOSTSCREEN_MCP_EXE`（exe 完整路径）。
-3. 默认安装位置：
-   `%LOCALAPPDATA%\GhostScreen\app\mcp\GhostScreen.Mcp.exe`，其次
-   `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`。
+3. 默认安装位置：`%LOCALAPPDATA%\GhostScreen\app\` 下的自动下载 /
+   install.ps1 布局（`app\GhostScreen-<ver>\mcp\GhostScreen.Mcp.exe` 或
+   `app\mcp\GhostScreen.Mcp.exe`），其次 `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`。
 
-其余 `config` 键：`toolCallTimeoutMs`（默认交给桥接层）、`args`、`env`
+其余 `config` 键：`autoDownload`（默认 true，exe 缺失时自动下载最新 Release）、
+`toolCallTimeoutMs`（默认交给桥接层）、`args`、`env`
 （传给 server 进程的额外环境变量）。
 
 ## 验证
