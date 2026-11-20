@@ -74,8 +74,18 @@ The plugin resolves the exe in this order:
    `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`.
 
 Other supported `config` keys: `autoDownload` (default true — fetch the latest
-release when the exe is missing), `toolCallTimeoutMs` (default left to the
-bridge), `args`, `env` (extra environment variables for the server process).
+release when the exe is missing), `autoUpdate` (default true — a once-a-day
+online check downloads newer GhostScreen releases in the background; the next
+DSH restart switches to the newest installed version; installs pinned via
+`exePath`/`GHOSTSCREEN_MCP_EXE` are never auto-updated), `toolCallTimeoutMs`
+(default left to the bridge), `args`, `env` (extra environment variables for
+the server process).
+
+Downloaded releases live in `%LOCALAPPDATA%\GhostScreen\app\versions\<ver>\`;
+the plugin mounts the highest installed version at startup. The check result
+is cached in `app\update-check.json` (at most one online check per day) and
+release zips in `GhostScreen\downloads\` (never re-downloaded for the same
+version).
 
 ## Verification
 

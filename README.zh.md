@@ -65,8 +65,15 @@ dsh plugin --profile <profile> add woodtong/dsh-ghostscreen-mcp
    `app\mcp\GhostScreen.Mcp.exe`），其次 `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`。
 
 其余 `config` 键：`autoDownload`（默认 true，exe 缺失时自动下载最新 Release）、
+`autoUpdate`（默认 true，每天在线检查一次主体版本，落后就在后台下好新版本、
+重启 DSH 后自动切换；显式 `exePath`/`GHOSTSCREEN_MCP_EXE` 指定的安装不受自动更新管理）、
 `toolCallTimeoutMs`（默认交给桥接层）、`args`、`env`
 （传给 server 进程的额外环境变量）。
+
+自动下载/升级的各版本安装在
+`%LOCALAPPDATA%\GhostScreen\app\versions\<版本>\`，插件每次启动选版本最高者；
+检查结果缓存于 `app\update-check.json`（每天最多查一次，避开 GitHub 限流），
+zip 缓存于 `GhostScreen\downloads\`（同版本不重复下载）。
 
 ## 验证
 
