@@ -42,11 +42,11 @@ gh repo edit woodtong/dsh-ghostscreen-mcp --add-topic dsh-plugin
 
 ```powershell
 cd E:\software_code\Visual_Stdio_Code\dsh-ghostscreen-mcp
-git tag v0.1.0
-git push origin v0.1.0
-npm pack   # 产出 dsh-ghostscreen-mcp-0.1.0.tgz
-Copy-Item dsh-ghostscreen-mcp-0.1.0.tgz dsh-ghostscreen-mcp.tgz   # 版本无关文件名，latest/download/ 链接永不失效
-gh release create v0.1.0 dsh-ghostscreen-mcp.tgz --title "v0.1.0" --notes "First public release. Mounts the GhostScreen (Neutrino) MCP server; exe path resolved via config exePath / GHOSTSCREEN_MCP_EXE / %LOCALAPPDATA%\GhostScreen defaults."
+git tag v0.2.0
+git push origin v0.2.0
+npm pack   # 产出 dsh-ghostscreen-mcp-0.2.0.tgz
+Copy-Item dsh-ghostscreen-mcp-0.2.0.tgz dsh-ghostscreen-mcp.tgz   # 版本无关文件名，latest/download/ 链接永不失效
+gh release create v0.2.0 dsh-ghostscreen-mcp.tgz --title "v0.2.0" --notes "First public release. Mounts the GhostScreen (Neutrino) MCP server; auto-downloads the latest GhostScreen release on first start (config.autoDownload to disable), with config exePath / GHOSTSCREEN_MCP_EXE / %LOCALAPPDATA%\GhostScreen fallbacks."
 ```
 
 预期：Release 页面出现 `dsh-ghostscreen-mcp.tgz` 资产；市场条目里的
@@ -63,7 +63,7 @@ scripts 字段，安装时不执行任何构建脚本。
 npm publish --access public
 ```
 
-预期：npmjs 出现 dsh-ghostscreen-mcp@0.1.0；市场自动关联下载量
+预期：npmjs 出现 dsh-ghostscreen-mcp@0.2.0；市场自动关联下载量
 （package.json 的 repository 字段已指向本仓库，无需额外声明）。
 
 ## 第 4 步：收录 PR（创建满 1 天后）
