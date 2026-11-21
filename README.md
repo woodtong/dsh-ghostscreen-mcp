@@ -37,55 +37,87 @@ dsh plugin --profile <profile> add woodtong/dsh-ghostscreen-mcp
 
 ### Getting GhostScreen.Mcp.exe
 
-**Nothing to do by default**: on first start with the exe missing, the plugin
-automatically downloads the latest `GhostScreen-<version>-win-x64.zip`
-(~200 MiB, progress logged) from the
-[Neutrino Releases](https://github.com/woodtong/neutrino/releases), unpacks it
-to `%LOCALAPPDATA%\GhostScreen\app\`, and mounts it. To manage the binary
-yourself, either:
+**Nothing to do.** On every DSH start the plugin asks GitHub for the newest
+release; when it is newer than what is installed, it silently downloads
+`GhostScreen-<version>-win-x64.zip` (~200 MiB, sha256-verified when the release
+publishes one) and unpacks it into
+`%LOCALAPPDATA%\GhostScreen\app\versions\<version>\`. The package carries both
+halves of the product — the bridge (`mcp\`) and the desktop app (`cli\`,
+`tray\`) — so one update covers everything.
 
-1. download the zip and run `scripts/install.ps1` from the extracted package;
-   **or**
-2. copy `mcp\GhostScreen.Mcp.exe` anywhere you like and point the plugin at
-   it (next section).
+The plugin page reports what is happening: checking, download percentage,
+"downloaded — starts on the next DSH start", or the failure reason with a
+**Check now** button. The next start mounts the new version and deletes the
+older version folders (plus the download cache) to reclaim space. There is no
+version picker: the plugin always runs the newest managed release, unless you
+pin a local build (see below).
 
-If the auto-download fails (offline / restricted network) or is disabled via
-`config.autoDownload: false`, the plugin logs setup guidance, mounts
-nothing, and the rest of the DSH session keeps working normally.
-### Pointing at a custom exe location
+If the check or download fails (offline, restricted network), the plugin logs
+guidance, mounts nothing, and the rest of the DSH session keeps working; the
+plugin page shows the error.
 
-The plugin resolves the exe in this order:
+Downloads survive interruptions: a transfer that stalls for 90 s is abandoned
+and resumed from the byte it reached, switching between `curl` (honours
+`HTTPS_PROXY`) and the built-in fetch as needed. The plugin never leaves a
+half-written zip behind — it downloads to a temporary part file and only then
+renames it into the cache.
 
-1. `exePath` in the plugin row's `config` — override in your profile's
-   `cordis.patch.yml`:
+### Managed vs. pinned: who runs what
 
-   ```yaml
-   - id: ghostscreen-mcp-runtime
-     name: dsh-ghostscreen-mcp
-     config:
-       exePath: 'D:\tools\GhostScreen\GhostScreen.Mcp.exe'
-   ```
+The server binary comes from one of two places, and the choice is per machine —
+never global:
 
-2. The `GHOSTSCREEN_MCP_EXE` environment variable (full path to the exe).
-3. Default install locations: the auto-download / install.ps1 layout under
-   `%LOCALAPPDATA%\GhostScreen\app\` (either
-   `app\GhostScreen-<ver>\mcp\GhostScreen.Mcp.exe` or
-   `app\mcp\GhostScreen.Mcp.exe`), then
-   `%LOCALAPPDATA%\GhostScreen\GhostScreen.Mcp.exe`.
+| | Managed (default for every install) | Pinned (development only) |
+|---|---|---|
+| Where the exe comes from | Newest GitHub release, unpacked into `%LOCALAPPDATA%\GhostScreen\app\versions\<version>\` | The path in `config.exePath` or `%GHOSTSCREEN_MCP_EXE%` |
+| Updates | Checked on every start, downloaded silently, mounted on the next start, older folders deleted | Auto-update keeps downloading, but never switches away from the pinned exe |
+| Who runs it | Every machine whose profile has no pin | Only the machine that set the pin |
 
-Other supported `config` keys: `autoDownload` (default true — fetch the latest
-release when the exe is missing), `autoUpdate` (default true — a once-a-day
-online check downloads newer GhostScreen releases in the background; the next
-DSH restart switches to the newest installed version; installs pinned via
-`exePath`/`GHOSTSCREEN_MCP_EXE` are never auto-updated), `toolCallTimeoutMs`
-(default left to the bridge), `args`, `env` (extra environment variables for
-the server process).
+A pin lives in the **profile** (`~/.dsh/profiles/<profile>/cordis.patch.yml`),
+written on that one machine. The plugin's own bundle patch ships no `config`
+layer, so a fresh install always starts out managed. The intended split:
 
-Downloaded releases live in `%LOCALAPPDATA%\GhostScreen\app\versions\<ver>\`;
-the plugin mounts the highest installed version at startup. The check result
-is cached in `app\update-check.json` (at most one online check per day) and
-release zips in `GhostScreen\downloads\` (never re-downloaded for the same
-version).
+- **Development machine**: pin the local release build, so a rebuild takes
+  effect on the next DSH start without publishing anything.
+- **Everyone else**: no pin. They run the newest release you published, and get
+  it automatically — publishing is the only step that changes what users run.
+
+### Pinning a local build (development)
+
+A locally built `GhostScreen.Mcp.exe` can still be pinned — just not from the
+page. Either edit the plugin row's `config` in `cordis.patch.yml`:
+
+```yaml
+- id: ghostscreen-mcp-runtime
+  name: dsh-ghostscreen-mcp
+  config:
+    exePath: 'D:\tools\GhostScreen\GhostScreen.Mcp.exe'
+```
+
+or set the `GHOSTSCREEN_MCP_EXE` environment variable. A pinned build always
+wins over the managed versions (the page labels it "external build"); auto-update
+keeps the managed folder current but never switches away from the pinned exe.
+
+Resolution order: `exePath` → `GHOSTSCREEN_MCP_EXE` → newest managed version
+under `versions\` → legacy layouts (`app\GhostScreen-<ver>\mcp\`, `app\mcp\`,
+`app\GhostScreen.Mcp.exe`).
+
+Remaining `config` keys: `args`, `env` (extra environment variables for the
+server process), `toolCallTimeoutMs` (left to the bridge by default). The
+download/update switches are gone — both are always on.
+
+The page reads its status from a read-only host route,
+`GET /ghostscreen-mcp/status` (same-origin JSON; `?refresh=1` forces a check).
+
+### Package self-check
+
+After an update (and on every start) the host looks inside the unpacked package
+and, if something the plugin needs is missing, shows one warning line on the
+page: `mcp\GhostScreen.Mcp.exe` always, plus
+`GhostScreen.Notifier\GhostScreen.Notifier.exe` — that folder only ships from
+GhostScreen **0.2.0** on, so releases older than that legitimately lack it and
+the warning says so. The check is advisory: it never blocks the start, repairs
+nothing, and leaves the download flow untouched.
 
 ## Verification
 

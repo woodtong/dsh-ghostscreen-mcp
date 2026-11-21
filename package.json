@@ -1,16 +1,23 @@
 {
   "name": "dsh-ghostscreen-mcp",
-  "version": "0.2.0",
-  "description": "Mount the GhostScreen (Neutrino) MCP server in DSH sessions: invisible-window capture and input for native apps and headless web; auto-downloads the server binary on first start",
+  "version": "0.2.1",
+  "description": "Mount the GhostScreen (Neutrino) MCP server in DSH sessions: invisible-window capture and input for native apps and headless web; auto-downloads and silently updates the server on every start",
   "type": "module",
   "main": "index.mjs",
   "exports": {
     ".": "./index.mjs",
+    "./client": "./lib/client.js",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json",
     "./package.json": "./package.json"
   },
   "files": [
     "index.mjs",
+    "lib/client.js",
     "cordis.patch.yml",
+    "locale/en.json",
+    "locale/zh.json",
+    "icon.svg",
     "README.md",
     "README.zh.md",
     "LICENSE",
@@ -20,10 +27,16 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
-    }
+    },
+    "client": {
+      "inject": ["slots", "locale"],
+      "platform": "web"
+    },
+    "manifestVersion": 1
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-mcp-client": ">=0.1.0-rc.6 <1.0.0-0"
+    "@deepseek-ai/dsh-mcp-client": ">=0.1.0-rc.6 <1.0.0-0",
+    "@deepseek-ai/schemastery": "~3.18.5"
   },
   "engines": {
     "node": ">=22"

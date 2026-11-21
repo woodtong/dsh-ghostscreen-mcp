@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "GhostScreen MCP",
+    "description": "Parks real windows off-screen and drives them without stealing focus: screenshots plus mouse/keyboard via window messages, UIA and CDP. Checks GitHub on every start, silently updates the whole GhostScreen install (bridge + desktop), and switches to it after the next restart while deleting old versions."
+  }
+}
