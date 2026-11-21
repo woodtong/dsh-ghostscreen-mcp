@@ -7,13 +7,19 @@ parked off the virtual desktop, captured with PrintWindow, and driven with
 window messages / UIA behind a human consent gate. Headless web pages run in a
 private headless Edge driven over CDP.
 
-All 21 tools the server exposes are registered as `mcp__ghostscreen__<ToolName>`:
+All 25 tools the server exposes (GhostScreen 0.2.0) are registered as
+`mcp__ghostscreen__<ToolName>`:
 
-- Native windows: `list_windows`, `attach_window`, `screenshot`, `observe`,
-  `click`, `click_element`, `set_text`, `key`, `drag`, `scroll`, `close_target`
-- Headless web: `open_web`, `attach_cdp`, `navigate`, `get_html`, `snapshot`,
-  `viewport`, `console`, `network`
-- Safety & lifecycle: `list_targets`, `close_all`, `ControlStatus`-style state
+- Windows & visibility: `list_windows`, `attach_window`, `park_window`,
+  `show_to_user`, `set_visibility`, `screenshot`, `observe`, `snapshot`
+- Native input: `click`, `click_element`, `set_text`, `key`, `drag`, `scroll`,
+  `close_target`
+- Headless web: `open_web`, `attach_cdp`, `navigate`, `get_html`, `viewport`,
+  `console`, `network`
+- Lifecycle: `list_targets`, `close_all`, `end_turn`
+
+An older server binary exposes fewer tools; the list above tracks the current
+release.
 
 Safety invariants: never steals focus, never moves the real cursor, never
 touches the clipboard. When a human is actively using the desktop, UIA actions

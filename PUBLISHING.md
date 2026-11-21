@@ -1,6 +1,6 @@
-﻿# 鍙戝竷鎵嬪唽锛圥UBLISHING锛?
+# 鍙戝竷鎵嬪唽锛圥UBLISHING锛?
 鏈枃浠舵槸鍙戝竷鎿嶄綔鎵嬪唽锛屼笉灞炰簬鎻掍欢杩愯鐨勪竴閮ㄥ垎銆傛墍鏈夐渶瑕?GitHub 璐﹀彿鎿嶄綔鐨勬渶鍚庝竴姝?鐢变粨搴撲富浜烘墜鍔ㄦ墽琛岋紱涓嬮潰姣忎竴姝ラ兘缁欏嚭绮剧‘鍛戒护涓庨鏈熸晥鏋溿€?
-鏈湴浠撳簱锛歚E:\software_code\Visual_Stdio_Code\dsh-ghostscreen-mcp`锛堝凡 git init銆?宸叉彁浜ゃ€乵ain 鍒嗘敮锛夈€傚綋鍓嶄唬鐮佸凡閫氳繃锛歚node --check`銆乶pm pack 骞茶窇锛堟棤瀹夎鏈熸瀯寤?鑴氭湰锛夈€佷互鍙婃闈?profile 涓婄殑鐪熸満绔埌绔獙璇侊紙0.2.1锛氶娆″惎鍔ㄦ鏌?鈫?闈欓粯涓嬭浇
+鏈湴浠撳簱锛歚E:\software_code\Visual_Stdio_Code\dsh-ghostscreen-mcp`锛堝凡 git init銆?宸叉彁浜ゃ€乵ain 鍒嗘敮锛夈€傚綋鍓嶄唬鐮佸凡閫氳繃锛歚node --check`銆乶pm pack 骞茶窇锛堟棤瀹夎鏈熸瀯寤?鑴氭湰锛夈€佷互鍙婃闈?profile 涓婄殑鐪熸満绔埌绔獙璇侊紙0.2.2锛氶娆″惎鍔ㄦ鏌?鈫?闈欓粯涓嬭浇
 207 MiB 鈫?sha256 鏍￠獙 鈫?瑙ｅ帇鍒?`versions\0.1.0\` 鈫?閲嶅惎鍓嶆姤 "up to date"锛?鍖呰嚜妫€ warn 钀藉湪 `versions\0.1.0` 涓婏紝鍥犱负璇ョ増鏃╀簬 notifier 鐩綍锛夈€?
 鍙戝竷妯″瀷锛堥噸瑕侊級锛?*鍙戠増鏄敼鍙樼敤鎴风琛屼负鐨勫敮涓€鍔ㄤ綔**銆傜敤鎴风 profile 娌℃湁 pin锛?瀹夎鍚庤嚜鍔ㄨ窡 GitHub 鏈€鏂?Release 璧帮紱鏈満寮€鍙戝垯鐢?`config.exePath` pin 浣忔湰鍦?Release 鏋勫缓锛堣 README銆屾墭绠＄増涓庡浐瀹氱増銆嶏級銆?
 ## 绗?0 姝ワ細浜哄伐鏍稿锛堝彂甯冨墠蹇呭仛锛?
@@ -26,11 +26,11 @@ gh repo edit woodtong/dsh-ghostscreen-mcp --add-topic dsh-plugin
 ## 绗?2 姝ワ細鎵?tag 骞跺彂甯?Release锛堥檮 plugin.tgz锛?
 ```powershell
 cd E:\software_code\Visual_Stdio_Code\dsh-ghostscreen-mcp
-git tag v0.2.1
-git push origin v0.2.1
-npm pack   # 浜у嚭 dsh-ghostscreen-mcp-0.2.1.tgz
-Copy-Item dsh-ghostscreen-mcp-0.2.1.tgz dsh-ghostscreen-mcp.tgz   # 鐗堟湰鏃犲叧鏂囦欢鍚嶏紝latest/download/ 閾炬帴姘镐笉澶辨晥
-gh release create v0.2.1 dsh-ghostscreen-mcp.tgz --title "v0.2.1" --notes "No more version picker: every DSH start checks the newest GhostScreen release, silently downloads it (curl with node-fetch fallback, resumable, sha256-verified), activates it on the next start and deletes older version folders. New in-page configuration (args / env / timeout) plus a live update card fed by the read-only /ghostscreen-mcp/status route, and a package self-check that warns when mcp\GhostScreen.Mcp.exe or GhostScreen.Notifier\GhostScreen.Notifier.exe is missing (the notifier folder ships since GhostScreen 0.2.0, so older packages legitimately lack it). Local builds stay pinnable via config.exePath or GHOSTSCREEN_MCP_EXE for development."
+git tag v0.2.2
+git push origin v0.2.2
+npm pack   # 浜у嚭 dsh-ghostscreen-mcp-0.2.2.tgz
+Copy-Item dsh-ghostscreen-mcp-0.2.2.tgz dsh-ghostscreen-mcp.tgz   # 鐗堟湰鏃犲叧鏂囦欢鍚嶏紝latest/download/ 閾炬帴姘镐笉澶辨晥
+gh release create v0.2.2 dsh-ghostscreen-mcp.tgz --title "v0.2.2" --notes "No more version picker: every DSH start checks the newest GhostScreen release, silently downloads it (curl with node-fetch fallback, resumable, sha256-verified), activates it on the next start and deletes older version folders. New in-page configuration (args / env / timeout) plus a live update card fed by the read-only /ghostscreen-mcp/status route, and a package self-check that warns when mcp\GhostScreen.Mcp.exe or GhostScreen.Notifier\GhostScreen.Notifier.exe is missing (the notifier folder ships since GhostScreen 0.2.0, so older packages legitimately lack it). Local builds stay pinnable via config.exePath or GHOSTSCREEN_MCP_EXE for development."
 ```
 
 棰勬湡锛歊elease 椤甸潰鍑虹幇 `dsh-ghostscreen-mcp.tgz` 璧勪骇锛涘競鍦烘潯鐩噷鐨?`tarball: https://github.com/woodtong/dsh-ghostscreen-mcp/releases/latest/download/dsh-ghostscreen-mcp.tgz`
@@ -42,7 +42,7 @@ gh release create v0.2.1 dsh-ghostscreen-mcp.tgz --title "v0.2.1" --notes "No mo
 npm publish --access public
 ```
 
-棰勬湡锛歯pmjs 鍑虹幇 dsh-ghostscreen-mcp@0.2.1锛涘競鍦鸿嚜鍔ㄥ叧鑱斾笅杞介噺
+棰勬湡锛歯pmjs 鍑虹幇 dsh-ghostscreen-mcp@0.2.2锛涘競鍦鸿嚜鍔ㄥ叧鑱斾笅杞介噺
 锛坧ackage.json 鐨?repository 瀛楁宸叉寚鍚戞湰浠撳簱锛屾棤闇€棰濆澹版槑锛夈€?
 ## 绗?4 姝ワ細鏀跺綍 PR锛堝垱寤烘弧 1 澶╁悗锛?
 鏉＄洰鏂囦欢宸插濂斤細鏈粨搴?`market/woodtong__dsh-ghostscreen-mcp.yml`

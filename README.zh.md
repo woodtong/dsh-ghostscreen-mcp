@@ -5,13 +5,18 @@
 **人类看不见的屏幕**：真实窗口被停到虚拟桌面之外，用 PrintWindow 捕获，通过窗口消息 /
 UIA 在「人工同意门」之后驱动；无头网页跑在私有 headless Edge 里，经 CDP 控制。
 
-server 提供的全部 21 个工具注册为 `mcp__ghostscreen__<ToolName>`：
+server 提供的全部 25 个工具（GhostScreen 0.2.0）注册为
+`mcp__ghostscreen__<ToolName>`：
 
-- 原生窗口：`list_windows`、`attach_window`、`screenshot`、`observe`、`click`、
-  `click_element`、`set_text`、`key`、`drag`、`scroll`、`close_target`
-- 无头网页：`open_web`、`attach_cdp`、`navigate`、`get_html`、`snapshot`、
-  `viewport`、`console`、`network`
-- 安全与生命周期：`list_targets`、`close_all`、`ControlStatus` 式状态查询
+- 窗口与可见性：`list_windows`、`attach_window`、`park_window`、`show_to_user`、
+  `set_visibility`、`screenshot`、`observe`、`snapshot`
+- 原生输入：`click`、`click_element`、`set_text`、`key`、`drag`、`scroll`、
+  `close_target`
+- 无头网页：`open_web`、`attach_cdp`、`navigate`、`get_html`、`viewport`、
+  `console`、`network`
+- 生命周期：`list_targets`、`close_all`、`end_turn`
+
+更早的 server 二进制提供的工具更少，上面的清单跟随当前 Release。
 
 安全不变量：不抢前台、不动真实光标、不改剪贴板；人在用电脑时，UIA 动作先经
 非激活式协商窗征得同意。
