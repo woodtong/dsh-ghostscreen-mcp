@@ -1,6 +1,6 @@
-﻿{
+{
   "name": "dsh-ghostscreen-mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Mount the GhostScreen (Neutrino) MCP server in DSH sessions: invisible-window capture and input for native apps and headless web; auto-downloads and silently updates the server on every start",
   "type": "module",
   "main": "index.mjs",

@@ -40,6 +40,15 @@ npm pack --dry-run              # 看清单：应为 12 个文件，无 test-*.m
    harness 的预发布构建，用户 `npm install` 直接 `ERESOLVE`。
 5. **工具数、功能描述与实际 Release 一致**。市场评审会对着代码核描述，数字写错是被退回
    的头号原因。当前 GhostScreen 0.2.0 暴露 **25 个**工具。
+6. **`package.json` 不能有 UTF-8 BOM**。DSH 读 `package.json` 时不做去 BOM，带 BOM 会让
+   `JSON.parse` 直接失败，装完识别不到 `dsh.bundle`（2026-11-21 就因此被市场退回一次）。
+   `node -e` 里的 `require('./package.json')` 会替你去掉 BOM，所以它测不出来，必须看字节：
+
+```powershell
+$b = [System.IO.File]::ReadAllBytes("$PWD\package.json"); $b[0..2] -join ','
+# 应为 123,10,32（"{" + 换行 + 空格）；239,187,191 就是 BOM
+```
+
 
 ## 第 1 步：仓库与 topic（只做一次）
 
