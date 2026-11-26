@@ -32,7 +32,7 @@ node tools\selfcheck.mjs --local              # 再加一项真实下载（约 2
 - `--local`：按 `package.json` 的 `files` 白名单把**工作区**复制到临时目录（等价于
   `npm pack --dry-run`，但真的解包出来检查）。
 - 不加 `--local`：审计**已发布的 Release**——下载版本无关附件、核对 tag、市场条目、
-  市场目录、附件哈希，并在干净的临时 `%LOCALAPPDATA%` 下真实走一遍首次下载（应 23/23）。
+  市场目录、附件哈希，并在干净的临时 `%LOCALAPPDATA%` 下真实走一遍首次下载（应 25/25）。
 - 行为测试对着一个**假的 GitHub** 跑（不联网、不启动任何 `GhostScreen.Mcp.exe`，不碰真实的
   `%LOCALAPPDATA%\GhostScreen`）：离线首启只打引导并排定重试、网络恢复后「立即检查」一次
   装好并立即挂载、后台重试自愈、重试恰好 4 次后停止、停用插件取消重试、启动时发现新版
