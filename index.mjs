@@ -56,6 +56,9 @@ const STATUS_PATH = "/ghostscreen-mcp/status";
 const ASSET_NAME_RE = /^GhostScreen-[\w.\-]+-win-x64\.zip$/;
 const UA = "dsh-ghostscreen-mcp";
 
+/** Waits before the background re-attempts of a failed first download. */
+const BOOTSTRAP_RETRY_MS = [10_000, 30_000, 120_000, 600_000];
+
 /** In-flight downloads, aborted when the owning fiber is disposed (remount, disable). */
 const activeDownloads = new Set();
 const META_TIMEOUT_MS = 20_000;
@@ -673,10 +676,24 @@ export async function apply(ctx, config = {}) {
     latest: null, // { tag, version, name }
     progress: null, // { done, total, pct }
     error: null, // { message, at }
+    retryAt: null, // epoch ms of the next automatic re-attempt, when one is scheduled
     integrity: null, // { dir, checkedAt, missing: ('mcp' | 'notifier')[] }
   };
 
   let inflight = null;
+
+  // Bridge lifecycle. null = nothing is mounted (a download that completes in
+  // this state may mount at once: no server exe is locked), a fiber = mounted,
+  // REMOUNTING = a config save is swapping the fiber right now. liveFiber is
+  // the fiber that is really running, so a second save during the swap never
+  // mistakes the marker for a fiber.
+  let bridgeFiber = null;
+  let liveFiber = null;
+  let remountChain = Promise.resolve();
+  let generation = 0;
+  let disposed = false;
+  let retryTimer = null;
+  const REMOUNTING = Symbol("remounting");
 
   /** Check GitHub and silently install a newer release. Single-flight; never throws. */
   function refresh(reason) {
@@ -690,12 +707,17 @@ export async function apply(ctx, config = {}) {
         state.checkedAt = Date.now();
         state.latest = { tag: rel.tag, version: rel.version.raw, name: rel.name };
         const installed = bestInVersions(paths.versions);
+        // Nothing is mounted and no swap is under way: whatever this refresh
+        // finds can start right away (Retry after a failed first download, or a
+        // pinned exe that vanished) instead of waiting for the next DSH start.
+        const idleNow = !bridgeFiber && !disposed && reason !== "bootstrap";
         if (installed && cmpVer(rel.version, installed.version) <= 0) {
           state.integrity = inspectPackage(installed.dir);
           reportIntegrity(ctx, state.integrity);
           state.phase = "idle";
           state.progress = null;
           log(ctx, `[dsh-ghostscreen-mcp] GhostScreen ${installed.version.raw} is up to date (latest ${rel.tag})`);
+          if (idleNow) void mountBridge(false);
           return state;
         }
         state.phase = "downloading";
@@ -705,7 +727,20 @@ export async function apply(ctx, config = {}) {
         reportIntegrity(ctx, state.integrity);
         state.progress = null;
         state.phase = "ready";
-        log(ctx, `[dsh-ghostscreen-mcp] GhostScreen ${rel.tag} is ready; restart DSH to activate it.`);
+        log(
+          ctx,
+          `[dsh-ghostscreen-mcp] GhostScreen ${rel.tag} is installed${
+            reason === "bootstrap" ? "" : bridgeFiber ? "; restart DSH to activate it" : "; mounting it now"
+          }.`,
+        );
+        if (idleNow) {
+          // The first download failed earlier and Retry was pressed, or a
+          // pinned exe vanished: nothing is running, so the new install can
+          // start right away instead of waiting for the next DSH start. The
+          // mount itself moves the phase off "ready"; if it fails, "ready"
+          // stays true to the page: the next start will try again.
+          void mountBridge(false);
+        }
       } catch (error) {
         state.phase = "error";
         state.progress = null;
@@ -743,6 +778,7 @@ export async function apply(ctx, config = {}) {
       latest: state.latest,
       progress: state.progress,
       error: state.error,
+      retryAt: state.retryAt,
       integrity: state.integrity,
       managed,
       versionsDir: paths?.versions ?? null,
@@ -783,6 +819,10 @@ export async function apply(ctx, config = {}) {
   // the old fiber: it keeps writing into app\downloads and locks the file.
   ctx.effect(
     () => () => {
+      disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = null;
+      state.retryAt = null;
       for (const ctl of activeDownloads) {
         try {
           ctl.abort(new Error("bridge fiber disposed"));
@@ -794,9 +834,6 @@ export async function apply(ctx, config = {}) {
     },
     "ghostscreen-mcp: abort in-flight downloads",
   );
-
-  let bridgeFiber = null;
-  let generation = 0;
 
   /** Resolve + mount the stdio bridge. Safe to call again after dispose(); a
    *  generation counter guards against double mounts racing a download. */
@@ -815,12 +852,14 @@ export async function apply(ctx, config = {}) {
 
     if (!mounted) {
       state.current = null;
+      liveFiber = bridgeFiber = null;
       ctx.logger?.error?.(MISSING_EXE_HELP);
+      scheduleBootstrapRetry(gen);
       return;
     }
 
     try {
-      bridgeFiber = ctx.plugin(mcpClient, {
+      liveFiber = bridgeFiber = ctx.plugin(mcpClient, {
         transport: "stdio",
         serverName: "ghostscreen",
         command: mounted.exe,
@@ -837,7 +876,19 @@ export async function apply(ctx, config = {}) {
       });
       state.current = { version: mounted.version?.raw ?? null, exe: mounted.exe, source: mounted.source };
       log(ctx, `[dsh-ghostscreen-mcp] bridge mounted: ${mounted.exe} (${mounted.source}${mounted.version ? ` ${mounted.version.raw}` : ""})`);
+      // Whatever got here — Retry, a background retry, a save — the session
+      // now runs the newest install it can resolve, so neither a pending
+      // "restart to activate" nor a pending "retrying the first download"
+      // is true any more.
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = null;
+      state.retryAt = null;
+      if (state.phase === "ready") {
+        state.phase = "idle";
+        state.progress = null;
+      }
     } catch (error) {
+      liveFiber = bridgeFiber = null;
       ctx.logger?.error?.("[dsh-ghostscreen-mcp] mount failed:", error);
       return;
     }
@@ -854,6 +905,44 @@ export async function apply(ctx, config = {}) {
       // and takes over on the next start.
       void refresh("startup");
     }
+  }
+
+  /**
+   * A first run that ends without the server package is the one state this
+   * plugin cannot work in, and GitHub is often unreachable for a few seconds
+   * behind a proxy. Re-attempt in the background, bounded, instead of leaving
+   * the session without tools until the next start. A dispose or a config-save
+   * remount cancels the chain (a remount schedules its own).
+   */
+  function scheduleBootstrapRetry(gen) {
+    if (retryTimer) clearTimeout(retryTimer);
+    retryTimer = null;
+    state.retryAt = null;
+    if (disposed || !paths) return;
+    let attempt = 0;
+    const step = async () => {
+      retryTimer = null;
+      state.retryAt = null;
+      if (disposed || gen !== generation) return;
+      log(ctx, `[dsh-ghostscreen-mcp] retrying the first download (${attempt + 1}/${BOOTSTRAP_RETRY_MS.length}) ...`);
+      await refresh("bootstrap");
+      if (disposed || gen !== generation) return;
+      if (resolveMount(snapshot(config), paths)) {
+        void mountBridge(false);
+        return;
+      }
+      attempt += 1;
+      if (attempt < BOOTSTRAP_RETRY_MS.length) {
+        retryTimer = setTimeout(step, BOOTSTRAP_RETRY_MS[attempt]);
+        retryTimer.unref?.();
+        state.retryAt = Date.now() + BOOTSTRAP_RETRY_MS[attempt];
+      } else {
+        log(ctx, "[dsh-ghostscreen-mcp] still no server package; press Retry on the plugin page or restart DSH.");
+      }
+    };
+    retryTimer = setTimeout(step, BOOTSTRAP_RETRY_MS[0]);
+    retryTimer.unref?.();
+    state.retryAt = Date.now() + BOOTSTRAP_RETRY_MS[0];
   }
 
   await mountBridge(true);
@@ -874,12 +963,31 @@ export async function apply(ctx, config = {}) {
     );
     if (!relevant) return;
     log(ctx, `[dsh-ghostscreen-mcp] config changed (${flat.join(", ")}); remounting bridge`);
-    const old = bridgeFiber;
-    bridgeFiber = null;
+    // From here on nothing may mount until the swap is done: the marker stops
+    // a download finishing meanwhile, the counter stops mountBridge runs that
+    // are still awaiting their download. Saves are serialised so two quick
+    // ones cannot each dispose + mount and leak a server process.
+    bridgeFiber = REMOUNTING;
     generation++;
-    const remount = () => void mountBridge(true);
-    if (old) Promise.resolve(old.dispose()).then(remount, remount).catch(() => {});
-    else remount();
+    remountChain = remountChain.then(async () => {
+      const old = liveFiber;
+      liveFiber = null;
+      if (old) {
+        try {
+          await old.dispose();
+        } catch {
+          /* already gone */
+        }
+      }
+      if (disposed) return;
+      try {
+        await mountBridge(true);
+      } catch (error) {
+        // Never let one failed swap reject the chain: every later save would be skipped.
+        liveFiber = bridgeFiber = null;
+        ctx.logger?.error?.("[dsh-ghostscreen-mcp] remount failed:", error);
+      }
+    });
   });
 
   // We ship our own plugin page; opt out of the auto-generated settings page.

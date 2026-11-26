@@ -58,9 +58,14 @@ older version folders (plus the download cache) to reclaim space. There is no
 version picker: the plugin always runs the newest managed release, unless you
 pin a local build (see below).
 
-If the check or download fails (offline, restricted network), the plugin logs
-guidance, mounts nothing, and the rest of the DSH session keeps working; the
-plugin page shows the error.
+A **first** download is different: nothing is running yet, so the tools are
+mounted the moment the package lands — no DSH restart. If that first download
+fails (offline, restricted network, GitHub hiccup), the plugin logs guidance,
+mounts nothing, keeps the rest of the DSH session working, and retries by
+itself after 10 s, 30 s, 2 min and 10 min; the page shows the failure reason,
+the time of the next attempt, and **Check now** retries immediately. The
+retries stop after those four attempts — then the button or the next DSH
+start is the way back.
 
 Downloads survive interruptions: a transfer that stalls for 90 s is abandoned
 and resumed from the byte it reached, switching between `curl` (honours
@@ -130,6 +135,15 @@ nothing, and leaves the download flow untouched.
 After installing and restarting DSH, the `mcp__ghostscreen__*` tools appear in
 the session. Quick check: call `mcp__ghostscreen__list_windows` — it should
 list your visible top-level windows.
+
+## Development
+
+`node tools/selfcheck.mjs --local` is the pre-release gate: it stages the
+working tree exactly like `npm pack` would, then boots the plugin against a
+fake GitHub to prove the first-download, retry and remount behaviour — without
+touching the real `%LOCALAPPDATA%\GhostScreen` or starting a server process.
+Without `--local` it audits a published Release instead. The release procedure
+is in [PUBLISHING.md](PUBLISHING.md).
 
 ## License
 

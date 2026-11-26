@@ -47,8 +47,11 @@ dsh plugin --profile <profile> add woodtong/dsh-ghostscreen-mcp
 下次启动 DSH 时自动挂载新版本，并删除更早的版本目录（以及下载缓存）以节省空间。
 页面不提供版本选择：永远运行"最新的托管版本"，除非你固定了本地构建（见下）。
 
-检查失败（离线、网络受限）时插件在日志里打印指引，不挂载任何工具，DSH 会话其余部分
-照常工作，页面会显示具体错误。
+**首次**下载不一样：此时还没有任何东西在运行，所以包一下完就立即挂载工具，不用重启 DSH。
+首次下载失败（离线、网络受限、GitHub 抖动）时，插件在日志里打印指引、不挂载任何工具，
+DSH 会话其余部分照常工作，并在 10 秒、30 秒、2 分钟、10 分钟后自动重试；页面显示失败原因、
+下次尝试的时间，「立即检查」可立刻重试。四次都没成功就停止自动重试——之后靠按钮或下次
+启动 DSH 恢复。
 
 下载支持中断续传：连续 90 秒没有进展就放弃当前通道，从已下载的字节处续传，在
 `curl`（遵循 `HTTPS_PROXY`）与内置 fetch 之间自动切换；临时文件先写成 `.part`，
@@ -105,6 +108,13 @@ warning：永远检查 `mcp\GhostScreen.Mcp.exe`，另外检查
 
 安装并重启 DSH 后，会话中出现 `mcp__ghostscreen__*` 工具。快速检查：调用
 `mcp__ghostscreen__list_windows`，应列出当前可见的顶层窗口。
+
+## 开发
+
+`node tools/selfcheck.mjs --local` 是发版前的门禁：它按 `npm pack` 的方式暂存工作区，
+再对着一个假的 GitHub 启动插件，验证首次下载、自动重试与重挂载行为——不碰真实的
+`%LOCALAPPDATA%\GhostScreen`，也不启动任何 server 进程。不加 `--local` 时审计的是已发布
+的 Release。发版流程见 [PUBLISHING.md](PUBLISHING.md)。
 
 ## 许可证
 
